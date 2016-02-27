@@ -1,0 +1,22 @@
+//
+//  PrefixHeader.pch
+//  Asanow
+//
+//  Created by Marco Cabazal on 2/15/15.
+//  Copyright (c) 2015 The Chill Mill, Inc. All rights reserved.
+//
+
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import "credentials.h"
+@import GoogleMaps;
+@import AFNetworking;
+#endif
+
+#ifndef Asanow_PrefixHeader_pch
+#define Asanow_PrefixHeader_pch
+
+#define DOCDIR [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject]
+
+#endif
