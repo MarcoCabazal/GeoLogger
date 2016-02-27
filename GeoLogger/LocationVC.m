@@ -210,8 +210,6 @@
         NSString *formattedAddress = [results[0] valueForKey:@"formatted_address"];
         [addressDictionary setValue:formattedAddress forKey:@"formattedAddress"];
 
-        NSLog(@"addressDictionary: %@", addressDictionary);
-
         [self.locationDictionary setValue:addressDictionary forKey:@"address"];
 
         [self performSelectorOnMainThread:@selector(updateMarkerTitle:) withObject:addressDictionary waitUntilDone:NO];

@@ -10,7 +10,13 @@
 #define credentials_h
 
 #error Put your respective Google API keys here then comment this line. Don't forget to set the bundle ID to the one registered in your Google Developer Console at https://console.developers.google.com .
-#define GOOGLEMAPSKEY				@""
-#define GOOGLEGEOKEY				@""
+#define GOOGLEMAPSKEY			@""
+#define GOOGLEGEOKEY			@""
+
+
+#warning If you want to test out Firebase support, put in your Firebase url below then comment this line.
+#define FIREBASE_URL			@""
+#define FIREBASE_USER			@""
+#define FIREBASE_PASSWORD		@""
 
 #endif /* credentials_h */

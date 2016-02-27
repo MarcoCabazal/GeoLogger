@@ -12,7 +12,7 @@ This was tested against iOS 9 but there shouldn't be any problems building this 
 
 Installation
 ------------
-This project makes use of the Google Maps SDK and the awesome [AFNetworking](http://github.com/afnetworking/afnetworking) via [CocoaPods](http://cocoapods.org). Just run `pod install` prior to building then open the resulting `GeoLogger.xcworkspace`.
+This project makes use of the Google Maps SDK, the awesome [AFNetworking](http://github.com/afnetworking/afnetworking), and optionally, [Firebase](http://firebase.com), via [CocoaPods](http://cocoapods.org). Just run `pod install` prior to building then open the resulting `GeoLogger.xcworkspace`.
 
 &copy; 2014 The Chill Mill, Inc and Marco Cabazal
 

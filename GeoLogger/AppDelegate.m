@@ -25,6 +25,27 @@
     navigationController.topViewController.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem;
     splitViewController.delegate = self;
 
+    [[Firebase defaultConfig] setPersistenceEnabled:YES];
+
+    if ([FIREBASE_URL length] > 0) {
+
+    Firebase *firebase = [[Firebase alloc] initWithUrl:FIREBASE_URL];
+
+        [firebase authUser:FIREBASE_USER password:FIREBASE_PASSWORD withCompletionBlock:^(NSError *error, FAuthData *authData) {
+
+            if (error) {
+
+                NSLog(@"error: %@", [[error userInfo] valueForKey:@"NSLocalizedDescription"]);
+
+            } else {
+
+                self.uid = [authData.uid copy];
+
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"gotUID" object:nil];
+            }
+        }];
+    }
+
     return YES;
 }
 

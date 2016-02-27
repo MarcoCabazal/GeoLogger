@@ -23,14 +23,7 @@
 
     self.detailViewController = (LocationVC *)[[self.splitViewController.viewControllers lastObject] topViewController];
 
-    NSString *locationsPath = [DOCDIR stringByAppendingPathComponent:@"locations.plist"];
-
-    self.locations = [NSMutableArray arrayWithContentsOfFile:locationsPath];
-
-    if (!self.locations) {
-
-        self.locations = [NSMutableArray array];
-    }
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loadLocations) name:@"gotUID" object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -78,10 +71,51 @@
     [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
 }
 
+- (void)loadLocations {
+
+    if ([FIREBASE_URL length] > 0) {
+
+        self.locations = [NSMutableArray array];
+
+        NSString *firebaseURL = [NSString stringWithFormat:@"%@/locations/%@", FIREBASE_URL, APPDELEGATE.uid];
+
+        Firebase *firebase = [[Firebase alloc] initWithUrl:firebaseURL];
+
+        [firebase observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+
+            if (snapshot.value != [NSNull null]) {
+
+                [self setLocations:snapshot.value];
+                [self.tableView reloadData];
+            }
+        }];
+
+    } else {
+
+        NSString *locationsPath = [DOCDIR stringByAppendingPathComponent:@"locations.plist"];
+        self.locations = [NSMutableArray arrayWithContentsOfFile:locationsPath];
+        
+        if (! self.locations) {
+            
+            self.locations = [NSMutableArray array];
+        }
+    }
+}
+
 - (void)archiveLocations {
 
-    NSString *locationsPath = [DOCDIR stringByAppendingPathComponent:@"locations.plist"];
-    [self.locations writeToFile:locationsPath atomically:YES];
+    if ([FIREBASE_URL length] > 0) {
+
+        NSString *firebaseURL = [NSString stringWithFormat:@"%@/locations/%@", FIREBASE_URL, APPDELEGATE.uid];
+        Firebase *firebase = [[Firebase alloc] initWithUrl:firebaseURL];
+
+        [firebase setValue:self.locations];
+
+    } else {
+
+        NSString *locationsPath = [DOCDIR stringByAppendingPathComponent:@"locations.plist"];
+        [self.locations writeToFile:locationsPath atomically:YES];
+    }
 }
 
 #pragma mark - Segues

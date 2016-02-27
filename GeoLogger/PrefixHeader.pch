@@ -9,14 +9,17 @@
 #ifdef __OBJC__
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
+#import "AppDelegate.h"
 #import "credentials.h"
 @import GoogleMaps;
 @import AFNetworking;
+@import Firebase;
 #endif
 
 #ifndef Asanow_PrefixHeader_pch
 #define Asanow_PrefixHeader_pch
 
 #define DOCDIR [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject]
+#define APPDELEGATE ((AppDelegate *)[[UIApplication sharedApplication] delegate])
 
 #endif
