@@ -27,24 +27,25 @@
 
     [[Firebase defaultConfig] setPersistenceEnabled:YES];
 
-    if ([FIREBASE_URL length] > 0) {
+    self.firebase = [[Firebase alloc] initWithUrl:FIREBASE_URL];
 
-    Firebase *firebase = [[Firebase alloc] initWithUrl:FIREBASE_URL];
+    [self.firebase authUser:FIREBASE_USER password:FIREBASE_PASSWORD withCompletionBlock:^(NSError *error, FAuthData *authData) {
 
-        [firebase authUser:FIREBASE_USER password:FIREBASE_PASSWORD withCompletionBlock:^(NSError *error, FAuthData *authData) {
+        if (error) {
 
-            if (error) {
+            NSLog(@"error: %@", [[error userInfo] valueForKey:@"NSLocalizedDescription"]);
 
-                NSLog(@"error: %@", [[error userInfo] valueForKey:@"NSLocalizedDescription"]);
+        } else {
 
-            } else {
+            self.uid = [authData.uid copy];
 
-                self.uid = [authData.uid copy];
+            [[NSUserDefaults standardUserDefaults] setObject:self.uid forKey:@"uid"];
 
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"gotUID" object:nil];
-            }
-        }];
-    }
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"gotAuthenticatedUID" object:nil];
+        }
+    }];
+
+    [self.firebase keepSynced:YES];
 
     return YES;
 }

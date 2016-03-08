@@ -16,6 +16,7 @@
 
 @property (strong,nonatomic) NSMutableDictionary *locationDictionary;
 @property (nonatomic) NSInteger locationIndex;
+@property (nonatomic) NSString *locationKey;
 
 @property (nonatomic) BOOL firstLocationUpdate;
 @property (nonatomic, getter=isInEditMode) BOOL editMode;
@@ -26,16 +27,17 @@
 
 @implementation LocationVC
 
-- (void)setLocationForEditting:(NSMutableDictionary*)locationDictionary index:(NSInteger)index {
+- (void)setLocationForEditting:(NSMutableDictionary*)locationDictionary
+                   locationKey:(NSString*)locationKey
+                         index:(NSInteger)index {
 
     [self setEditMode:YES];
 
     [self setLocationDictionary:locationDictionary];
+    [self setLocationKey:locationKey];
     [self setLocationIndex:index];
 
-    NSDictionary *addressDictionary = [locationDictionary valueForKey:@"address"];
-
-    NSString *title = addressDictionary[@"formattedAddress"];
+    NSString *title = self.locationDictionary[@"address"][@"route"];
 
     [self setTitle:title];
 }
@@ -70,11 +72,11 @@
 
     } else {
 
-        camera = [GMSCameraPosition cameraWithLatitude:[[self.locationDictionary valueForKey:@"latitude"] floatValue]
-                                             longitude:[[self.locationDictionary valueForKey:@"longitude"] floatValue]
+        camera = [GMSCameraPosition cameraWithLatitude:[self.locationDictionary[@"latitude"] floatValue]
+                                             longitude:[self.locationDictionary[@"longitude"] floatValue]
                                                   zoom:16];
 
-        [self.marker setTitle:[self.locationDictionary valueForKey:@"address"]];
+        [self.marker setTitle:[self.locationDictionary valueForKey:@"address"][@"route"]];
     }
     
     [self.mapView setCamera:camera];
@@ -93,8 +95,8 @@
 
     if (self.isInEditMode) {
 
-        float latitude = [[self.locationDictionary valueForKey:@"latitude"] floatValue];
-        float longitude = [[self.locationDictionary valueForKey:@"longitude"] floatValue];
+        float latitude = [self.locationDictionary[@"latitude"] floatValue];
+        float longitude = [self.locationDictionary[@"longitude"] floatValue];
 
         CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake(latitude, longitude);
 
@@ -106,6 +108,7 @@
 
     [super viewDidDisappear:animated];
 
+    [self setTitle:nil];
     [self.mapView removeObserver:self forKeyPath:@"myLocation"];
 }
 
@@ -148,6 +151,7 @@
                                 @"latitude": [NSNumber numberWithFloat:coordinate.latitude],
                                 @"longitude": [NSNumber numberWithFloat:coordinate.longitude]
                                 } mutableCopy];
+
     [self reverseGeocode:coordinate];
 }
 

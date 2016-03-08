@@ -10,7 +10,8 @@
 #import "LocationVC.h"
 
 @interface MasterViewController ()
-@property NSMutableArray *locations;
+@property (strong, nonatomic) NSMutableArray *locations;
+@property (strong, nonatomic) Firebase *ownerLocationsRef;
 @end
 
 @implementation MasterViewController
@@ -23,7 +24,14 @@
 
     self.detailViewController = (LocationVC *)[[self.splitViewController.viewControllers lastObject] topViewController];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loadLocations) name:@"gotUID" object:nil];
+    if (! [[NSUserDefaults standardUserDefaults] valueForKey:@"uid"]) {
+
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loadLocations) name:@"gotAuthenticatedUID" object:nil];
+
+    } else {
+
+        [self loadLocations];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -43,12 +51,9 @@
 
     NSDictionary *locationDictionary = vc.locationDictionary;
 
-    [self.locations insertObject:locationDictionary atIndex:0];
+    Firebase *newLocationRef = [self.ownerLocationsRef childByAutoId];
 
-    [self archiveLocations];
-
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [newLocationRef setValue:locationDictionary];
 }
 
 - (IBAction)editLocation:(UIStoryboardSegue *)segue {
@@ -56,11 +61,13 @@
     LocationVC *vc = (LocationVC*)segue.sourceViewController;
 
     NSDictionary *locationDictionary = vc.locationDictionary;
+    NSString *locationKey = vc.locationKey;
     NSInteger index = vc.locationIndex;
 
-    [self.locations replaceObjectAtIndex:index withObject:locationDictionary];
+    Firebase *editedLocationRef = [self.ownerLocationsRef childByAppendingPath:locationKey];
 
-    [self archiveLocations];
+    [editedLocationRef updateChildValues:locationDictionary];
+    [[self.locations objectAtIndex:index] setValue:locationDictionary forKey:locationKey];
 
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
     [self performSelector:@selector(delayReloadForIndex:) withObject:indexPath afterDelay:.5];
@@ -73,49 +80,22 @@
 
 - (void)loadLocations {
 
-    if ([FIREBASE_URL length] > 0) {
+    self.locations = [NSMutableArray array];
 
-        self.locations = [NSMutableArray array];
+    NSString *referencePath = [NSString stringWithFormat:@"locations/%@", [[NSUserDefaults standardUserDefaults] valueForKey:@"uid"]];
+    self.ownerLocationsRef = [APPDELEGATE.firebase childByAppendingPath:referencePath];
 
-        NSString *firebaseURL = [NSString stringWithFormat:@"%@/locations/%@", FIREBASE_URL, APPDELEGATE.uid];
+    [[self.ownerLocationsRef queryOrderedByKey] observeEventType:FEventTypeChildAdded withBlock:^(FDataSnapshot *snapshot) {
 
-        Firebase *firebase = [[Firebase alloc] initWithUrl:firebaseURL];
+        if (snapshot.value != [NSNull null]) {
 
-        [firebase observeSingleEventOfType:FEventTypeValue withBlock:^(FDataSnapshot *snapshot) {
+            NSMutableDictionary *locationDictionary = [@{snapshot.key : snapshot.value} mutableCopy];
 
-            if (snapshot.value != [NSNull null]) {
+            [self.locations addObject:locationDictionary];
 
-                [self setLocations:snapshot.value];
-                [self.tableView reloadData];
-            }
-        }];
-
-    } else {
-
-        NSString *locationsPath = [DOCDIR stringByAppendingPathComponent:@"locations.plist"];
-        self.locations = [NSMutableArray arrayWithContentsOfFile:locationsPath];
-        
-        if (! self.locations) {
-            
-            self.locations = [NSMutableArray array];
+            [self.tableView reloadData];
         }
-    }
-}
-
-- (void)archiveLocations {
-
-    if ([FIREBASE_URL length] > 0) {
-
-        NSString *firebaseURL = [NSString stringWithFormat:@"%@/locations/%@", FIREBASE_URL, APPDELEGATE.uid];
-        Firebase *firebase = [[Firebase alloc] initWithUrl:firebaseURL];
-
-        [firebase setValue:self.locations];
-
-    } else {
-
-        NSString *locationsPath = [DOCDIR stringByAppendingPathComponent:@"locations.plist"];
-        [self.locations writeToFile:locationsPath atomically:YES];
-    }
+    }];
 }
 
 #pragma mark - Segues
@@ -125,13 +105,21 @@
     if ([[segue identifier] isEqualToString:@"showLocation"]) {
 
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        NSMutableDictionary *locationDictionary = self.locations[indexPath.row];
+        NSDictionary *locationObject = self.locations[indexPath.row];
+        NSString *locationKey = [[locationObject allKeys] objectAtIndex:0];
+        NSMutableDictionary *locationDictionary = locationObject[locationKey];
+
+        NSLog(@"dictionary for edit: %@", locationDictionary);
 
         LocationVC *controller = (LocationVC *)[segue destinationViewController];
-        [controller setLocationForEditting:locationDictionary index:indexPath.row];
-        
+        [controller setLocationForEditting:locationDictionary locationKey:locationKey index:indexPath.row];
+
         controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
         controller.navigationItem.leftItemsSupplementBackButton = YES;
+
+    } else {
+
+
     }
 }
 
@@ -149,10 +137,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"localCellIdentifier" forIndexPath:indexPath];
 
 	NSDictionary *locationDictionary = self.locations[indexPath.row];
-    NSDictionary *addressDictionary = locationDictionary[@"address"];
+    NSString *key = [[locationDictionary allKeys] objectAtIndex:0];
+
+    NSDictionary *addressDictionary = locationDictionary[key][@"address"];
 
     NSString *title = addressDictionary[@"formattedAddress"];
 
@@ -171,9 +161,12 @@
 
     if (editingStyle == UITableViewCellEditingStyleDelete) {
 
-        [self.locations removeObjectAtIndex:indexPath.row];
+        NSDictionary *locationObject = [self.locations objectAtIndex:indexPath.row];
+        NSString *locationKey = [[locationObject allKeys] objectAtIndex:0];
+        Firebase *locationRef = [self.ownerLocationsRef childByAppendingPath:locationKey];
+        [locationRef removeValue];
 
-        [self archiveLocations];
+        [self.locations removeObjectAtIndex:indexPath.row];
 
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     } 

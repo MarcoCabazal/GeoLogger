@@ -4,7 +4,7 @@ GeoLogger
 
 GeoLogger is a sample iOS app that lets you log your current location (which is automatically reverse-geocoded) as seen on a Google Map. You may override the detected location by dragging the marker or tapping anywhere on the map. You may also edit the logged locations later.
 
-This makes use of [Google Maps SDK for iOS](https://developers.google.com/maps/), [Google Geocoding API](https://developers.google.com/maps/documentation/geocoding/intro), and optionally, [Firebase](http://firebase.com) for persistence. Otherwise, locations are merely saved as a plist.
+This makes use of [Google Maps SDK for iOS](https://developers.google.com/maps/), [Google Geocoding API](https://developers.google.com/maps/documentation/geocoding/intro), and [Firebase](http://firebase.com) for cloud and offline persistence.
 
 You will need to put in your API credentials in `credentials.h`. If you don't already have them, you can generate your credentials from the [Google Developer Console](https://console.developers.google.com). 
 

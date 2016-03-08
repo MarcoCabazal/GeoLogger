@@ -14,7 +14,7 @@
 #define GOOGLEGEOKEY			@""
 
 
-#warning If you want to test out Firebase support, put in your Firebase url below then comment this line.
+#error This app uses hardcoded Firebase user credentials. Create appropriate app and user at http://firebase.com
 #define FIREBASE_URL			@""
 #define FIREBASE_USER			@""
 #define FIREBASE_PASSWORD		@""

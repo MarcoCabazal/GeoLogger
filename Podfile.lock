@@ -15,7 +15,7 @@ PODS:
   - AFNetworking/UIKit (3.0.4):
     - AFNetworking/NSURLSession
   - Firebase (2.5.1)
-  - GoogleMaps (1.12.2)
+  - GoogleMaps (1.12.3)
 
 DEPENDENCIES:
   - AFNetworking
@@ -25,6 +25,6 @@ DEPENDENCIES:
 SPEC CHECKSUMS:
   AFNetworking: a0075feb321559dc78d9d85b55d11caa19eabb93
   Firebase: 3565ea88b830f28f2c77ecc524622bc71a20d085
-  GoogleMaps: cc76edaa94a4284e80ecd7089ed319d1cca5f37e
+  GoogleMaps: a4ac67918d0b5ba5f6b9893ac80487e357779e6c
 
 COCOAPODS: 0.39.0

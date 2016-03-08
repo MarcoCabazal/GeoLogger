@@ -13,7 +13,10 @@
 
 @property (readonly, nonatomic) NSMutableDictionary *locationDictionary;
 @property (readonly, nonatomic) NSInteger locationIndex;
+@property (readonly, nonatomic) NSString *locationKey;
 
-- (void)setLocationForEditting:(NSMutableDictionary*)locationDictionary index:(NSInteger)index;
+- (void)setLocationForEditting:(NSMutableDictionary*)locationDictionary
+                   locationKey:(NSString*)locationKey
+                         index:(NSInteger)index;
 
 @end

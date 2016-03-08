@@ -7,11 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+@class Firebase;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) NSString *uid;
+@property (strong, nonatomic) Firebase *firebase;
 
 @end
 
