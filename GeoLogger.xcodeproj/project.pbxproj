@@ -76,7 +76,6 @@
 				0CC907891C79A8A90021FE7F /* MasterViewController.m */,
 				0C4ABB7B1C7C469800681523 /* LocationVC.h */,
 				0C4ABB7C1C7C469800681523 /* LocationVC.m */,
-				0C708F901C80BCF800235724 /* credentials.h */,
 				0CC9078E1C79A8A90021FE7F /* Main.storyboard */,
 				0CC907911C79A8A90021FE7F /* Assets.xcassets */,
 				0CC907931C79A8A90021FE7F /* LaunchScreen.storyboard */,
@@ -89,6 +88,7 @@
 		0CC907821C79A8A90021FE7F /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				0C708F901C80BCF800235724 /* credentials.h */,
 				0C3EB1291C7CBB6000314B46 /* PrefixHeader.pch */,
 				0CC907831C79A8A90021FE7F /* main.m */,
 			);
@@ -368,12 +368,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = GeoLogger/PrefixHeader.pch;
 				INFOPLIST_FILE = GeoLogger/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = mobi.chillmill.GeoLogger;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = GeoLogger;
 			};
 			name = Debug;
 		};
@@ -383,12 +384,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = GeoLogger/PrefixHeader.pch;
 				INFOPLIST_FILE = GeoLogger/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = mobi.chillmill.GeoLogger;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = GeoLogger;
 			};
 			name = Release;
 		};

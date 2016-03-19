@@ -52,7 +52,6 @@
                       options:NSKeyValueObservingOptionNew
                       context:NULL];
 
-
     self.marker = [[GMSMarker alloc] init];
     [self.marker setIcon:[GMSMarker markerImageWithColor:[UIColor colorWithRed:0.369 green:0.639 blue:0.718 alpha:1]]];
     [self.marker setDraggable:YES];
@@ -75,7 +74,7 @@
         camera = [GMSCameraPosition cameraWithLatitude:[self.locationDictionary[@"latitude"] floatValue]
                                              longitude:[self.locationDictionary[@"longitude"] floatValue]
                                                   zoom:16];
-
+        [self.mapView setMyLocationEnabled:YES];
         [self.marker setTitle:[self.locationDictionary valueForKey:@"address"][@"route"]];
     }
     
@@ -134,7 +133,10 @@
 
         CLLocation *location = [change objectForKey:NSKeyValueChangeNewKey];
 
-        [self centerMapAndMarkerOn:location.coordinate];
+        if (! self.isInEditMode) {
+            
+            [self centerMapAndMarkerOn:location.coordinate];
+        }
     }
 }
 
@@ -168,55 +170,55 @@
 
     [manager GET:urlPath parameters:nil progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
 
-
         NSArray *results = [responseObject valueForKey:@"results"];
-        NSString *resultsPath = [DOCDIR stringByAppendingPathComponent:@"full.plist"];
-        [results writeToFile:resultsPath atomically:YES];
+
+        if ([results count] > 0) {
+
+            NSString *resultsPath = [DOCDIR stringByAppendingPathComponent:@"full.plist"];
+            [results writeToFile:resultsPath atomically:YES];
 
 
-        NSArray *addressComponents = results[0][@"address_components"];
-        NSString *reverseDumpPath = [DOCDIR stringByAppendingPathComponent:@"condensed.plist"];
-        [addressComponents writeToFile:reverseDumpPath atomically:YES];
+            NSArray *addressComponents = results[0][@"address_components"];
+            NSString *reverseDumpPath = [DOCDIR stringByAppendingPathComponent:@"condensed.plist"];
+            [addressComponents writeToFile:reverseDumpPath atomically:YES];
 
+            for (NSDictionary *addressComponentDictionary in addressComponents) {
 
-        NSMutableDictionary *addressDictionary = [NSMutableDictionary dictionary];
+                NSArray *typesArray = addressComponentDictionary[@"types"];
 
-        for (NSDictionary *addressComponentDictionary in addressComponents) {
+                if ( [typesArray[0] isEqualToString:@"route"]) {
 
-            NSArray *typesArray = addressComponentDictionary[@"types"];
+                    self.locationDictionary[@"route"] = addressComponentDictionary[@"long_name"];
+                }
 
-            if ( [typesArray[0] isEqualToString:@"route"]) {
+                if ( [typesArray[0] isEqualToString:@"locality"] && [typesArray[1] isEqualToString:@"political"]) {
 
-                [addressDictionary setValue:addressComponentDictionary[@"long_name"] forKey:@"route"];
+                    self.locationDictionary[@"locality"] = addressComponentDictionary[@"long_name"];
+                }
+
+                if ( [typesArray[0] isEqualToString:@"neighborhood"] && [typesArray[1] isEqualToString:@"political"]) {
+
+                    self.locationDictionary[@"neighborhood"] = addressComponentDictionary[@"long_name"];
+                }
+
+                if ( [typesArray[0] isEqualToString:@"administrative_area_level_1"] && [typesArray[1] isEqualToString:@"political"]) {
+
+                    self.locationDictionary[@"administrative_area_level_1"] = addressComponentDictionary[@"long_name"];
+                }
+
+                if ( [typesArray[0] isEqualToString:@"country"] && [typesArray[1] isEqualToString:@"political"]) {
+                    
+                    self.locationDictionary[@"country"] = addressComponentDictionary[@"long_name"];
+                }
             }
-
-            if ( [typesArray[0] isEqualToString:@"locality"] && [typesArray[1] isEqualToString:@"political"]) {
-
-                [addressDictionary setValue:addressComponentDictionary[@"long_name"] forKey:@"locality"];
-            }
-
-            if ( [typesArray[0] isEqualToString:@"neighborhood"] && [typesArray[1] isEqualToString:@"political"]) {
-
-                [addressDictionary setValue:addressComponentDictionary[@"long_name"] forKey:@"neighborhood"];
-            }
-
-            if ( [typesArray[0] isEqualToString:@"administrative_area_level_1"] && [typesArray[1] isEqualToString:@"political"]) {
-
-                [addressDictionary setValue:addressComponentDictionary[@"long_name"] forKey:@"administrative_area_level_1"];
-            }
-
-            if ( [typesArray[0] isEqualToString:@"country"] && [typesArray[1] isEqualToString:@"political"]) {
-
-                [addressDictionary setValue:addressComponentDictionary[@"long_name"] forKey:@"country"];
-            }
+            
+            NSString *formattedAddress = results[0][@"formatted_address"];
+            self.locationDictionary[@"formattedAddress"] = formattedAddress;
         }
 
-        NSString *formattedAddress = [results[0] valueForKey:@"formatted_address"];
-        [addressDictionary setValue:formattedAddress forKey:@"formattedAddress"];
+        self.locationDictionary[@"geofenced"] = [NSNumber numberWithBool:NO];
 
-        [self.locationDictionary setValue:addressDictionary forKey:@"address"];
-
-        [self performSelectorOnMainThread:@selector(updateMarkerTitle:) withObject:addressDictionary waitUntilDone:NO];
+        [self performSelectorOnMainThread:@selector(updateMarkerTitle) withObject:nil waitUntilDone:NO];
 
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
 
@@ -224,13 +226,13 @@
     }];
 }
 
-- (void)updateMarkerTitle:(NSDictionary*)addressDictionary {
+- (void)updateMarkerTitle {
 
-    NSString *detail = [NSString stringWithFormat:@"%@, %@", addressDictionary[@"neighborhood"], addressDictionary[@"locality"]];
+    NSString *detail = [NSString stringWithFormat:@"%@, %@", self.locationDictionary[@"neighborhood"], self.locationDictionary[@"locality"]];
 
-    [self.marker setTitle:addressDictionary[@"route"]];
+    [self.marker setTitle:self.locationDictionary[@"route"]];
     [self.marker setSnippet:detail];
-    [self setTitle:addressDictionary[@"route"]];
+    [self setTitle:self.locationDictionary[@"route"]];
 }
 
 #pragma mark - GMSMapViewDelegate methods
